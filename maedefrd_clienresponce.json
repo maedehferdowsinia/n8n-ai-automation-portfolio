@@ -1,0 +1,1000 @@
+{
+  "name": "maedefrd_clienresponce",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tapi.bale.ai/botapikey/sendMessage",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "chatid"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        688,
+        128
+      ],
+      "id": "44cf0088-e3be-4a66-9391-a9afe8e126a4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://tapi.bale.ai/botapikey/getUpdates",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.result[$json.result.length - 1].message.chat.id }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -544,
+        288
+      ],
+      "id": "9e36e39e-9b84-4fab-8c30-846af30e6b1c",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -768,
+        288
+      ],
+      "id": "483a857a-989d-4be7-99af-3e2dc31afb9d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all()[0].json;\n\nconst lastMessage = data.result[data.result.length - 1].message.text;\n\nreturn [\n {\n json: {\n text: lastMessage\n }\n }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        288
+      ],
+      "id": "35fdbdf4-93c4-4134-94b3-3ff02122f2fb",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Code in JavaScript').item.json.text }}",
+        "options": {
+          "systemMessage": "تو یه دستار هوشمند هستی و قرار هست که مشتری هر سوالی از تو پرسید از طریق tool بری داخل جدول را بررسی کنی و سوال مشتری را با استفاده از داده های جدول جواب بدی \nواحد پولی دلار است\n\"بگو مثلا x دلار هست\"\n\nو در اخر پیام بنویس \"دستیار هوشمند شرکت کسبه \""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        336,
+        16
+      ],
+      "id": "5128f7d1-8acc-47be-af6d-b56170b576c0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        240
+      ],
+      "id": "5fd396dd-3eae-4dde-bf6b-0f68f662038b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ii6CPr0orcshGtpx",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xEghmVElEkJ5z9Kw",
+          "mode": "list",
+          "cachedResultName": "محصولات",
+          "cachedResultUrl": "/projects/mV4BpmmsLxbvTHUJ/datatables/xEghmVElEkJ5z9Kw"
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        272
+      ],
+      "id": "15a1ebae-9395-4827-a90e-6f1381d61cbc",
+      "name": "Get row(s) in Data table"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "X9wVGBqkajT3J4hX",
+          "mode": "list",
+          "cachedResultName": "پیام اخر",
+          "cachedResultUrl": "/projects/mV4BpmmsLxbvTHUJ/datatables/X9wVGBqkajT3J4hX"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        288
+      ],
+      "id": "dd6a7471-f8c5-4b7f-9bb2-571c0941a30d",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "da8f4a3c-34ee-4303-b8a1-31ee41984752",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "={{ $('Code in JavaScript').item.json.text }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        272
+      ],
+      "id": "3e7bec79-e8dc-467e-982c-f2bae78b8857",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "X9wVGBqkajT3J4hX",
+          "mode": "list",
+          "cachedResultName": "پیام اخر",
+          "cachedResultUrl": "/projects/mV4BpmmsLxbvTHUJ/datatables/X9wVGBqkajT3J4hX"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "1"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ $('Code in JavaScript').item.json.text }}"
+          },
+          "matchingColumns": [
+            "message"
+          ],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        144
+      ],
+      "id": "2f26610d-c270-45a8-9c91-31a415ff9f67",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tapi.bale.ai/botapikey/sendMessage",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "824742647"
+            },
+            {
+              "name": "text",
+              "value": "=پیام جدیدی دریافت نشد"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        400,
+        416
+      ],
+      "id": "0420e8d4-3644-496b-ba7c-aa09877c11ba",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "url": "https://tapi.bale.ai/botapikey/getUpdates",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.result[$json.result.length - 1].message.chat.id }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -576,
+        752
+      ],
+      "id": "056ad60d-cf05-4485-9df6-a80b57b3daf9",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        752
+      ],
+      "id": "4035a4f9-329f-4a76-ab93-be7bf7686acd",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all()[0].json;\n\nconst lastMessage = data.result[data.result.length - 1].message.text;\n\nreturn [\n {\n json: {\n text: lastMessage\n }\n }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        752
+      ],
+      "id": "aa9daeb6-cb15-461e-a7a8-fbb2ee3ab67a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Code in JavaScript1').item.json.text }}",
+        "options": {
+          "systemMessage": "You are an automated booking assistant connected to the Cal.com API v2 and an internal Data Table.\n\nCURRENT YEAR & DATE VALIDATION:\n1. The current year is 2026.\n2. Whenever a user requests a date (e.g., \"25 October\", \"۲۶ اکتبر\", \"دوشنبه\"), YOU MUST ALWAYS append or use the year 2026 (e.g., 2026-10-25). Never create or process dates in any past years under any circumstances.\n\nINTERNAL DATA TABLE CHECKING:\n1. Before calling 'create_booking', YOU MUST first search/check the internal Data Table tool to see if the requested date and time ('start_time') is already recorded.\n2. If the Data Table indicates that the requested time slot is already booked, DO NOT call 'create_booking'. Immediately respond in Persian:\n\"در این زمان قبلا وقت رزرو شده و امکان رزرو در این زمان امکان پذیر نیست.\"\n\nCORE RULES:\n1. When a user asks about available times for a specific date (e.g., \"برای Oct 12 ساعت ۹ وقت هست؟\"), YOU MUST use the 'get_available_slots' tool to check.\n2. If the user explicitly asks to book a time slot (e.g., \"بله لطفا در این تایم رزرو کنید\" or \"در این زمان رزرو کن\"), DO NOT ask again and DO NOT show the list again. YOU MUST immediately call the 'create_booking' tool using that exact time slot.\n3. When the user specifies a date and time, maintain strict precision. Do not change the requested date or time when calling tools or confirming with the user.\n4. After 'create_booking' successfully runs, inform the user clearly and politely in Persian that their booking has been successfully completed.\n5. Always respond in friendly, concise Persian.\n\nTIMEZONE & TIME FORMATTING (AM/PM vs 24h):\n1. Always parse user times accurately into 24-hour format before passing them to tools:\n - \"12:30 PM\" or \"۱۲:۳۰ بعد از ظهر/ظهر\" MUST be converted to 12:30.\n - \"12:30 AM\" or \"۱۲:۳۰ بامداد/نیمه‌شب\" MUST be converted to 00:30.\n - Evening/PM hours like \"1:00 PM\", \"2:00 PM\", \"9:00 PM\" MUST be converted to 13:00, 14:00, 21:00, etc.\n2. Combine the date (2026-MM-DD) and 24-hour time to form a standard ISO timestamp.\n\nCRITICAL ERROR HANDLING & CONFLICTS:\n1. When you call the 'create_booking' tool, check its output carefully.\n2. If the tool returns any error, conflict, status 400/409, or mentions 'Attempting to book a meeting in the past', 'no_available_users_found_error', 'slot taken', or 'unavailable', YOU MUST IMMEDIATELY respond to the user with this EXACT Persian sentence:\n\"در این زمان قبلا وقت رزرو شده و امکان رزرو در این زمان امکان پذیر نیست.\"\n3. Never show raw JSON, HTTP status codes, or technical stack traces to the user under any circumstances."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -96,
+        752
+      ],
+      "id": "d437c7a8-fab0-49f0-84b3-ca8653bb160c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        1120
+      ],
+      "id": "0e28c3f5-371c-4448-b659-1b15ccb7d387",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ii6CPr0orcshGtpx",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tapi.bale.ai/botapikey/sendMessage",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "824742647"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        752
+      ],
+      "id": "6a849040-918d-468d-9663-6550d2df48d0",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "toolDescription": "CRITICAL: Use this tool whenever the user asks about available times, free slots, calendar availability, or wants to check if a specific time/day is open for booking.",
+        "url": "https://api.cal.com/v2/slots/available",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "api"
+            },
+            {
+              "name": "eventTypeId",
+              "value": "7396024"
+            },
+            {
+              "name": "startTime",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "endTime",
+              "value": "={{ $now.plus({ days: 7 }).toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        1120
+      ],
+      "id": "5f8229b2-5e8a-4917-bf1b-90f390b571dc",
+      "name": "get_available_slots"
+    },
+    {
+      "parameters": {
+        "toolDescription": "CRITICAL: Use this tool to finalize and create a booking on Cal.com when the user explicitly chooses a specific free time slot and wants to book an appointment.",
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "api"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"eventTypeId\": 7396024,\n \"start\": \"={{ $fromAI('start', 'The full ISO start datetime string with local offset +03:30 for Asia/Tehran. Mandatory format example: 2026-10-26T09:30:00+03:30. NEVER use Z suffix.') }}\",\n \"responses\": {\n \"name\": \"={{ $fromAI('name', 'Name of the user', 'string', 'کاربر بله') }}\",\n \"email\": \"my-real-email@gmail.com\"\n },\n \"timeZone\": \"Asia/Tehran\",\n \"language\": \"fa\",\n \"metadata\": {}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        1120
+      ],
+      "id": "009ca26d-012e-4603-9257-5e47a9d5a3d8",
+      "name": "create_booking"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to check if a booking exists for a specific start_time ISO string in the table.",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "wGUXX2owbxsq69tG",
+          "mode": "list",
+          "cachedResultName": "timereservation_cleintresponse",
+          "cachedResultUrl": "/projects/mV4BpmmsLxbvTHUJ/datatables/wGUXX2owbxsq69tG"
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        1136
+      ],
+      "id": "e4a221f6-894b-4419-a002-e5fc00bf54f9",
+      "name": "Get row(s) in Data table1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        768
+      ],
+      "id": "6cab813c-371c-4f37-afcb-9183e41f63d8",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "url": "https://tapi.bale.ai/botapikey/getUpdates",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.result[$json.result.length - 1].message.chat.id }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        976,
+        768
+      ],
+      "id": "1a2906cd-2ff0-4af3-9e3b-f640524191be",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all()[0].json;\n\nconst lastMessage = data.result[data.result.length - 1].message.text;\n\nreturn [\n {\n json: {\n text: lastMessage\n }\n }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        768
+      ],
+      "id": "f1b837f7-5595-42d3-bccc-4cb08b1a81a3",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are a smart, polite, and helpful assistant for a reservation bot in Bale messenger. Your main job is to help users view available time slots and book them.\n\nYou have access to a data table containing time slots with these columns:\n- id: The unique identifier of the time slot.\n- reserved: A boolean or checkbox indicating if the slot is booked (true/checked means reserved, false/unchecked means available).\n- date: The textual representation of the date and time (e.g., \"دوشنبه 9 آبان ساعت 9:00\").\n\n### Your Responsibilities:\n1. *Show Available Times: When a user asks for available times, schedules, or wants to make a reservation, you MUST use the \"Get row(s) in Data table2\" tool to fetch all rows. Filter out the ones where \"reserved\" is true/checked, and present only the available (unreserved) time slots clearly in a list to the user, mentioning their ID or slot details.\n2. Handle Reservations: If a user chooses a specific time slot to book:\n - Identify the correct row `id` based on their choice.\n - Use the \"Update row(s) in Data table\" tool to change the `reserved` status of that specific row to `true` (checked).\n - Confirm the successful reservation back to the user clearly and friendly.\n3. Behavior & Tone:* \n - Always respond in fluent Persian (Farsi).\n - Be concise, polite, and guide the user step-by-step.\n - If no slots are available, politely inform the user."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1408,
+        768
+      ],
+      "id": "4ea81860-ea64-43ee-a151-ffbb1f2e3fe6",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1104,
+        1104
+      ],
+      "id": "7215d0ee-3a71-4ac3-83d5-74afd59c61ca",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "ii6CPr0orcshGtpx",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to check if a booking exists for a specific start_time ISO string in the table.",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "A0JctxWdVnO5hsEo",
+          "mode": "list",
+          "cachedResultName": "timereserv2",
+          "cachedResultUrl": "/projects/mV4BpmmsLxbvTHUJ/datatables/A0JctxWdVnO5hsEo"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        1104
+      ],
+      "id": "4e43555c-346a-4939-973f-6d65b6b82ab9",
+      "name": "Get row(s) in Data table2"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update row(s) : use this tool to mark a specific time slot as reserved by providing its date and time or ID",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "A0JctxWdVnO5hsEo",
+          "mode": "list",
+          "cachedResultName": "timereserv2",
+          "cachedResultUrl": "/projects/mV4BpmmsLxbvTHUJ/datatables/A0JctxWdVnO5hsEo"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reserved": true
+          },
+          "matchingColumns": [
+            "reserved"
+          ],
+          "schema": [
+            {
+              "id": "reserved",
+              "displayName": "reserved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        1104
+      ],
+      "id": "d8dfc846-0ca8-4231-9a34-4699359c00da",
+      "name": "Update row(s) in Data table"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tapi.bale.ai/botapikey/sendMessage",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "824742647"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1824,
+        768
+      ],
+      "id": "b3082235-7e23-4939-b0e4-3a75ecba5974",
+      "name": "HTTP Request6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_available_slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        []
+      ]
+    },
+    "Get row(s) in Data table1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c2653282-d459-486e-8696-39c68a32a17c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c02e72ec4c061bffcdf3c767fe13dae66d4e6da2efd80d2abc648868a629dcf2"
+  },
+  "nodeGroups": [],
+  "id": "xUIrIFJLOxLWiGCJ",
+  "tags": []
+}
