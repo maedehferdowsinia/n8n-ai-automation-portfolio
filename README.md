@@ -108,21 +108,15 @@ Bale Bot API| Customer communication
 n8n-ai-automation-portfolio/
 │
 ├── 01-ai-product-assistant/
-│   ├── workflow.json
-│   ├── README.md
-│   └── screenshots/
+│   └── screenshot
 │
 ├── 02-ai-meeting-booking-calcom/
-│   ├── workflow.json
-│   ├── README.md
-│   └── screenshots/
+│   └── screenshot
 │
 ├── 03-ai-availability-booking/
-│   ├── workflow.json
-│   ├── README.md
-│   └── screenshots/
-│
+│   └── screenshot│
 └── README.md
+└── maedefrd_clienresponce.json
 
 ---
 
